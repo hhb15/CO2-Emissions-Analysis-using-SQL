@@ -1,0 +1,138 @@
+/* SELECT Question 1: Annual US Total CO2 emission, respiratory deaths, population,
+                        CO2 emission (million metric tons) per 100,000 people, and
+                        respiratory deaths per 100,000 people */
+SELECT year,
+  sum(co2) AS US_CO2,
+  sum(deaths) / count(DISTINCT sectorName) / count(DISTINCT fuelTypeName) AS US_RespiratoryDeaths,
+  sum(population) / count(DISTINCT sectorName) / count(DISTINCT fuelTypeName) AS US_Population,
+  100000.0*sum(co2)/(sum(population) / count(DISTINCT sectorName) / count(DISTINCT fuelTypeName)) AS US_CO2Per100K,
+  100000.0*sum(deaths) / sum(population) AS US_RespiratoryDeathsPer100K
+FROM DW_EMISSION
+GROUP by year;
+
+/* SELECT Question 2: Cross Tabulation of million metric tons of CO2 emission per
+                        100,000 people from the Transportation sector */
+SELECT DW.state, 
+  1000000.0*sum(case when DW.year = 2012 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2012,
+  1000000.0*sum(case when DW.year = 2013 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2013,
+  1000000.0*sum(case when DW.year = 2014 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2014,
+  1000000.0*sum(case when DW.year = 2015 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2015,
+  1000000.0*sum(case when DW.year = 2016 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2016,
+  1000000.0*sum(case when DW.year = 2017 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2017,
+  1000000.0*sum(case when DW.year = 2018 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2018,
+  1000000.0*sum(case when DW.year = 2019 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2019,
+  1000000.0*sum(case when DW.year = 2020 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2020,
+  1000000.0*sum(case when DW.year = 2021 and  DW.sectorName = "Transportation" then DW.co2 end) /(sum(DW.population) / count(DISTINCT DW.sectorName) / count(DISTINCT DW.fuelTypeName))  as Y2021
+  
+FROM DW_EMISSION as DW
+GROUP by DW.state;
+
+
+/* Part 3 -- Extending Queries on Iowa, Kansas, Kentucky*/
+
+/* Showcasing total CO2 emissions, deaths, and population for Iowa, Kansas, Kentucky, and New Jersey 
+	 from the years of 2012 to 2021 for easier comparison between the four.
+	 *
+	 *
+	 Managerial Insights:
+	 From the four states, the highest co2 emissions across the years of 2012 to 2021 are from Kentucky. 
+	 Kentucky also has the highest number of deaths compared to the other three states.
+	 According to solarpower.guide, Kentucky is ranked 8th amongst all the states in the U.S for annual co2 emissions per capita.
+	 Compared to Iowa, Kansas, and Kentucky, the state of NJ is the second highest in co2 emissions from 2012 to 2021.
+	 *
+	 Managerial Recommendations:
+	 The state of Kentucky has the highest co2 emissions compared to Iowa, Kansas, and New Jersey. They also have the highest number of deaths
+	 resulting from respiratory issues. It is important for more research to be done to investigate whether the respiratory deaths result from the co2 emissions 
+	 and what can be done to reduce the number of deaths. There should be stricter rules and more regulatory compliance when it comes to co2 emissions.
+	 The states should implement strategies to reduce co2 emissions based on each sector, especially the sectors where co2 emissions are highest in each state.
+*/
+SELECT state, sum(co2) as CO2, sum(deaths) as Deaths, sum(population) as Population 
+FROM DW_EMISSION
+WHERE state IN ('Iowa', 'Kansas', 'Kentucky', 'New Jersey') 
+	AND year BETWEEN 2012 AND 2021
+GROUP by state;
+
+/* Comparing the co2 emissions across each sector in each state from the years of 2012 to 2021
+	 *
+	 *
+	 Managerial Insights:
+	 In Iowa, it seems that the highest co2 emissions are from the electric power sector.
+	 In Kansas, the highest co2 emissions are mostly from the electric power sector as well.
+	 In Kentucky, the highest co2 emissions are from the electric power sector, with transportation being a close second.
+	 In New Jersey, the highest co2 emissions result from the transportation sector.
+	 The sector that is mostly producing the highest co2 emissions is the electric power sector.
+	 *
+	 Managerial Recommendations: 
+	 In Iowa, Kansas, and Kentucky, the highest co2 emissions resulted from the electric power sector. To reduce these emissions, it is important for these states to
+	 change their policies and invest in new technologies. They should switch to more renewable energy sources and create long-term plans to keep co2 emissions
+	 from the electric power sector to a minimum. Kentucky as a lot of emissions from coal so switching to a more renewable energy source would be incredibly
+	 beneficial. 
+	 As for New Jersey, their highest co2 emissions result from transportation. It would be important for them to switch to electric vehicles or invest in infrastructure
+	 of other modes of transportation such as walking or biking. 
+*/
+SELECT state, year, 
+	sum(CASE WHEN sectorName = "Commercial" THEN co2 ELSE NULL END) as commercial_co2,
+	sum(CASE WHEN sectorName = "Electric power" THEN co2 ELSE NULL END) as electric_co2,
+	sum(CASE WHEN sectorName = "Industrial" THEN co2 ELSE NULL END) as industrial_co2,
+	sum(CASE WHEN sectorName = "Residential" THEN co2 ELSE NULL END) as residential_co2,
+	sum(CASE WHEN sectorName = "Transportation" THEN co2 ELSE NULL END) as transportation_co2
+FROM DW_EMISSION
+WHERE state IN ('Iowa', 'Kansas', 'Kentucky', 'New Jersey') 
+	AND year BETWEEN 2012 AND 2021
+GROUP BY state, year
+ORDER BY state, year;
+
+/* Compares the amount of CO2, deaths, and population in each state for each year from 2012 to 2021 for only the electric power sections
+	 as that section was producing the highest CO2 emissions.
+	 We can use this query to compare the years in each state when co2 emissions by electric power were the highest.
+	 *
+	 *
+	 Managerial Insights:
+	 In Iowa, 2012 was the year that co2 emissions from electric power sector were the highest, however, the deaths were relatively low that year.
+	 In Kansas, 2013 was the year that co2 emissions were highest from electric power.
+	 In Kentucky, 2012 was the year that co2 emissions from electric power were the highest.
+	 In New Jersey, 2015 was the year that co2 emissions from electric power were the highest.
+	 Overall, co2 emissions from electric power were generally higher in 2012 and 2013 for all four of these states and would taper down as the years went on.
+	 *
+	 Managerial Recommendations:
+	 From this table, it is shown how the co2 emissions from the electric power sector were the highest more than a decade ago, in 2012-2013. Ever since then, the co2 
+	 emissions from this sector have been dropping, although they are still quite high. It is important that these states keep reducing the emissions resulting
+	 from the electric power sector by sticking to long-term plans, so the emissions don't go back up the level that they were in 2012-2013. 
+*/
+SELECT state, year, sum(co2), sum(deaths), sum(population)
+FROM DW_EMISSION
+WHERE state IN ('Iowa', 'Kansas', 'Kentucky', 'New Jersey') 
+	AND year BETWEEN 2012 AND 2021
+	AND sectorName = "Electric power"
+GROUP BY state, year
+ORDER BY state, year;
+
+
+/* Showing the percentage of co2 emissions from each fuel type in the states from the years of 2012 to 2021
+	* 
+	*
+	Managerial Insights: 
+	In Iowa, the percentage of co2 from each fuel type varied in each year. However, the highest percentages were generally from coal.
+	In Kansas, the highest percentage was generally from coal as well, but petroleum was a very close second.
+	In Kentucky, the highest percentage was coal. Kentucky is the fifth largest coal producing state in the U.S. and its highest percentage of co2 emissions resulted from coal. 
+	In New Jersey, coal was the lowest percentage, while petroleum was the highest percentage. This makes sense as the transportation sector was 
+	where the highest emissions came from in NJ.
+	*
+	Managerial Recommendations: 
+	For the states that have large co2 emissions from coal, especially Kentucky, need to implement more regulatory measures to ensure that coal production 
+	complies with environmental standards. They should be more strict about the co2 emissions and enforce punishments if rules aren't followed properly.
+	Iowa, Kansas, and Kentucky should also invest in renewable energy sources to limit their coal production. There could be incentives to transition to a more
+	renewable energy source other than coal. 
+	The state of New Jersey had the highest co2 emissions from petroleum, which made sense because the transportation sector was where the highest co2 emissions 
+	resulted from for NJ. While it may be difficult to reduce co2 emissions resulting from petroleum and transportation, there may be ways to do so. NJ should 
+	invest in more public transportation and promote electric vehicles. There should also be regulation of vehicle emissions. 
+*/
+SELECT state, year, 
+	(sum(CASE WHEN fuelTypeName = "Petroleum" THEN co2 ELSE NULL END) / sum(co2)) *100 as petroleum_percentage,
+	(sum(CASE WHEN fuelTypeName = "Natural Gas" THEN co2 ELSE NULL END) / sum(co2)) *100 as natural_gas_percentage,
+	(sum(CASE WHEN fuelTypeName = "Coal" THEN co2 ELSE NULL END) / sum(co2)) *100 as coal_percentage
+FROM DW_EMISSION
+WHERE state IN ('Iowa', 'Kansas', 'Kentucky', 'New Jersey') 
+	AND year BETWEEN 2012 AND 2021
+GROUP BY state, year
+ORDER BY state, year;
