@@ -1,0 +1,70 @@
+/* DROP TABLE Statements */
+drop table if exists EMISSION;
+drop table if exists SECTOR;
+drop table if exists FUEL_TYPE;
+
+
+/* CREATE TABLE and INSERT Statements */
+create table SECTOR (
+	sectorID integer,
+	sectorName text,
+	primary key (sectorID)
+);
+insert into SECTOR values
+	(1,'Commercial'),
+	(2,'Electric power'),
+	(3,'Industrial'),
+	(4,'Residential'),
+	(5,'Transportation');
+
+create table FUEL_TYPE (
+	fuelTypeID integer,
+	fuelTypeName text,
+	primary key (fuelTypeID)
+);
+insert into FUEL_TYPE values
+	(1,'Petroleum'),
+	(2,'Natural Gas'),
+	(3,'Coal');
+
+drop table if exists EMISSION;
+create table EMISSION (
+	year INTEGER,
+	state TEXT,
+	sectorID TEXT,
+	fuelTypeID TEXT,
+	co2 REAL,
+	primary key (year, state, sectorID, fuelTypeID),
+	foreign key (sectorID) references SECTOR(sectorID),
+	foreign key (fuelTypeID) references FUEL_TYPE(fuelTypeID)
+);
+
+INSERT INTO EMISSION (year, state, sectorID, fuelTypeID, co2)
+SELECT DISTINCT year, state, sectorID, fuelTypeID, co2
+FROM COMMERCIAL;
+
+INSERT INTO EMISSION (year, state, sectorID, fuelTypeID, co2)
+SELECT DISTINCT year, state, sectorID, fuelTypeID, co2
+FROM ELECTRIC;
+
+INSERT INTO EMISSION (year, state, sectorID, fuelTypeID, co2)
+SELECT DISTINCT year, state, sectorID, fuelTypeID, co2
+FROM INDUSTRIAL;
+
+INSERT INTO EMISSION (year, state, sectorID, fuelTypeID, co2)
+SELECT DISTINCT year, state, sectorID, fuelTypeID, co2
+FROM RESIDENTIAL;
+
+INSERT INTO EMISSION (year, state, sectorID, fuelTypeID, co2)
+SELECT DISTINCT year, state, sectorID, fuelTypeID, co2
+FROM TRANSPORTATION;
+		  
+drop table if exists DW_EMISSION;
+CREATE table DW_EMISSION as 
+select  EMISSION.year, EMISSION.state, SECTOR.sectorName, FUEL_TYPE.fuelTypeName,EMISSION.co2, Pop.deaths, Pop.population
+from EMISSION
+left join SECTOR on EMISSION.sectorID = SECTOR.sectorID
+left  join FUEL_TYPE on EMISSION.fuelTypeID = FUEL_TYPE.fuelTypeID
+left join Pop on EMISSION.year = Pop.year AND EMISSION.state = Pop.state;
+
+SELECT * FROM DW_EMISSION;
